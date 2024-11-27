@@ -1,209 +1,135 @@
 import { useState } from "react";
-import "./LoginCustomer.scss";
-import { Box, Button, Modal, TextField, Typography } from "@mui/material";
+import { Form, Input, Button, Card, Typography, message, Divider } from "antd";
+import { UserOutlined, LockOutlined, ArrowLeftOutlined } from "@ant-design/icons";
+import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../../authentication/AuthProvider";
-import { userLogin } from "../../../utils/axios/customer";
-import { toast } from "react-toastify";
-import ToastUtil from "../../../components/toastContainer";
-import { forgotPassword } from "../../../utils/axios/user";
-import Spinner from "../../../components/SpinnerLoading";
+import { motion } from "framer-motion";
 
-const modalStyle = {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: "40px",
-  position: 'absolute',
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
-  width: 250,
-  bgcolor: 'background.paper',
-  boxShadow: 24,
-  p: 4,
-  borderRadius: 2,
-};
+const { Title, Text } = Typography;
 
 function LoginCustomer() {
-  const [staffSelectorModalOpen, setStaffSelectorModalOpen] = useState(false);
-  const [forgotPasswordModalOpen, setForgotPasswordModalOpen] = useState(false);
-
-  const handleForgotPasswordOpen = () => setForgotPasswordModalOpen(true);
-  const handleForgotPasswordClose = () => setForgotPasswordModalOpen(false);
-
-  const handleStaffSelectionOpen = () => setStaffSelectorModalOpen(true);
-  const handleStaffSelectionClose = () => setStaffSelectorModalOpen(false)
-  
-  const [isLoading, setIsLoading] = useState(false);
-  const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const navigate = useNavigate();
-  const auth = useAuth();
+  const [loading, setLoading] = useState(false);
 
-  const handleSignUp = () => {
-    navigate("/register");
-  }
+  const onFinish = async (values) => {
+    setLoading(true);
+    try {
+      const response = await axios.post("http://localhost:8080/login", {
+        username: values.username,
+        password: values.password,
+      });
 
-  const handleSalesStaffNavigate = () => {
-    navigate("/login-sales-staff");
-  }
-
-  const handleDeliveryStaffNavigate = () => {
-    navigate("/login-delivery-staff");
-  }
-
-  const handleManagerNavigate = () => {
-    navigate("/login-manager")
-  }
-
-  function handleEmailChange(e) {
-    setEmail(e.target.value);
-  }
-
-  function handlePasswordChange(e) {
-    setPassword(e.target.value);
-  }
-
-  async function handleForgotPasswordSend() {
-    setIsLoading(true);
-    const userType = 1;
-    const response = await forgotPassword(forgotPasswordEmail, userType);
-    if (response) {
-      toast("We have send you a form to reset password through your email");
-      setForgotPasswordEmail("");
-      setForgotPasswordModalOpen(false);
-    } else {
-      toast("Unexpected error has been occurred");
-    }
-    setIsLoading(false);
-  }
-
-  async function handleLogin(roleId) {
-    const data = await userLogin(email, password, roleId);
-    if (data) {
-      auth.handleLogin(data);
+      localStorage.setItem("user", JSON.stringify(response.data));
+      localStorage.setItem("isVip", response.data.vip);
+      
+      message.success("Login successful!");
       navigate("/");
-    } else {
-      toast("Invalid username or password");
+    } catch (error) {
+      console.error('Login error:', error);
+      message.error("Login failed. Please check your credentials!");
+    } finally {
+      setLoading(false);
     }
-  }
+  };
 
   return (
-    <div className="login">
-      <ToastUtil />
-      {isLoading && <Spinner />}
-
-      <Modal
-        open={forgotPasswordModalOpen}
-        onClose={handleForgotPasswordClose}
-        aria-labelledby="modal-title"
-        aria-describedby="modal-description"
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center px-4 sm:px-6 lg:px-8">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="max-w-md w-full"
       >
-        <Box
-          sx={modalStyle}
-          style={{ padding: "40px 70px" }}>
-          <TextField
-            fullWidth
-            type=""
-            label="Input your email"
-            onChange={(e) => setForgotPasswordEmail(e.target.value)}
-          />
-          {forgotPasswordEmail.length > 0 ? (
-            <Button variant="outlined" onClick={() => handleForgotPasswordSend()}>
-              <Typography>Confirm</Typography>
-            </Button>
-          ) : (
-            <Button variant="outlined" disabled>
-              <Typography>Confirm</Typography>
-            </Button>
-          )}
-        </Box>
-      </Modal>
+        <Button 
+          icon={<ArrowLeftOutlined />}
+          onClick={() => navigate("/")}
+          className="mb-8 hover:bg-blue-50"
+        >
+          Back to Home
+        </Button>
 
-      <Modal
-        open={staffSelectorModalOpen}
-        onClose={handleStaffSelectionClose}
-        aria-labelledby="modal-title"
-        aria-describedby="modal-description"
-      >
-        <Box
-          sx={modalStyle}
-          style={{ padding: "40px 70px" }}>
-          <Button
-            variant="outlined"
-            style={{ backgroundColor: "#C3F4FD" }}
-            onClick={() => handleDeliveryStaffNavigate()}
-          >
-            <Typography>Delivery Staff</Typography>
-          </Button>
-
-          <Button
-            variant="outlined"
-            style={{ backgroundColor: "#C3F4FD" }}
-            onClick={() => handleSalesStaffNavigate()}
-          >
-            <Typography>Sales Staff</Typography>
-          </Button>
-
-          <Button
-            variant="outlined"
-            style={{ backgroundColor: "#C3F4FD" }}
-            onClick={() => handleManagerNavigate()}
-          >
-            <Typography>Manager</Typography>
-          </Button>
-        </Box>
-      </Modal>
-
-      <div className="wraper">
-        <div className="login__form">
-          <h3 className="text-center">
-            <strong>Login as Customer</strong>
-          </h3>
-
-          <input
-            type="email"
-            placeholder="Email"
-            onChange={(e) => handleEmailChange(e)}
-          />
-
-          <input
-            type="password"
-            placeholder="Password"
-            onChange={(e) => handlePasswordChange(e)}
-          />
-
-          <div className="role__form">
-            <Button className="customer-login-btn" onClick={() => handleLogin(1)} variant="contained" style={{ maxWidth: "100%", margin: "auto" }}>
-              Login
-            </Button>
-          </div>
-
-          <div className="text-end">
-            <a className="small-link" onClick={() => handleForgotPasswordOpen()}>
-              Forgot password?
-            </a>
-          </div>
-
-          <div className="form__bottom">
-            <Button
-              variant="outlined"
-              style={{ backgroundColor: "#C3F4FD" }}
-              onClick={() => handleSignUp()}
+        <Card 
+          className="w-full shadow-2xl rounded-xl border-2 border-blue-50 backdrop-blur-sm bg-white/90"
+        >
+          <div className="text-center mb-8">
+            <motion.div
+              initial={{ scale: 0.5 }}
+              animate={{ scale: 1 }}
+              transition={{ duration: 0.5 }}
             >
-              <Typography style={{ fontSize: "12px" }}>Sign Up here</Typography>
-            </Button>
-            <Button
-              variant="outlined"
-              style={{ backgroundColor: "#C3F4FD" }}
-              onClick={() => handleStaffSelectionOpen()}
-            >
-              <Typography style={{ fontSize: "12px" }}>Are you with us ?</Typography>
-            </Button>
+              <Title level={2} className="!mb-2 !text-transparent !bg-clip-text !bg-gradient-to-r from-blue-600 to-purple-600">
+                Welcome Back!
+              </Title>
+              <Text className="text-gray-500">
+                Sign in to access our services
+              </Text>
+            </motion.div>
           </div>
+
+          <Form
+            name="login"
+            onFinish={onFinish}
+            layout="vertical"
+            size="large"
+          >
+            <Form.Item
+              name="username"
+              rules={[{ required: true, message: "Please enter your username!" }]}
+            >
+              <Input 
+                prefix={<UserOutlined className="text-gray-400" />}
+                placeholder="Username"
+                className="rounded-lg h-12"
+              />
+            </Form.Item>
+
+            <Form.Item
+              name="password"
+              rules={[{ required: true, message: "Please enter your password!" }]}
+            >
+              <Input.Password
+                prefix={<LockOutlined className="text-gray-400" />}
+                placeholder="Password"
+                className="rounded-lg h-12"
+              />
+            </Form.Item>
+
+            <Form.Item className="mb-2">
+              <Button
+                type="primary"
+                htmlType="submit"
+                loading={loading}
+                className="w-full h-12 bg-gradient-to-r from-blue-500 to-purple-500 border-none hover:from-blue-600 hover:to-purple-600 rounded-lg font-medium text-base"
+              >
+                Sign In
+              </Button>
+            </Form.Item>
+
+            <Divider className="!mb-4">
+              <Text className="text-gray-400">or</Text>
+            </Divider>
+
+            <div className="text-center">
+              <Text className="text-gray-500">
+                Don't have an account? {' '}
+                <Button 
+                  type="link" 
+                  className="!p-0 !m-0 font-medium hover:text-purple-600"
+                  onClick={() => message.info("Feature coming soon!")}
+                >
+                  Sign up now
+                </Button>
+              </Text>
+            </div>
+          </Form>
+        </Card>
+
+        <div className="text-center mt-8">
+          <Text className="text-gray-500">
+            © 2024 Your Company. All rights reserved.
+          </Text>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }

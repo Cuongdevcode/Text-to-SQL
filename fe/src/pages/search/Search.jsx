@@ -9,11 +9,15 @@ import {
   ShoppingOutlined, 
   StarFilled, 
   DollarCircleOutlined,
-  ReloadOutlined
+  ReloadOutlined,
+  LoginOutlined,
+  LogoutOutlined,
+  UserOutlined
 } from '@ant-design/icons';
 import "./Search.scss";
 import { getAllProducts } from "../../utils/axios/Product";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 const { Title, Text } = Typography;
 
@@ -24,6 +28,21 @@ function Search() {
   const [stats, setStats] = useState({ total: 0 });
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("user"));
+  const navigate = useNavigate();
+  const isVip = localStorage.getItem("isVip") === "true";
+
+  const handleLoginClick = () => {
+    navigate("/login");
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    localStorage.removeItem("isVip");
+    setIsLoggedIn(false);
+    message.success("Logged out successfully");
+    window.location.reload();
+  };
 
   const handleSearch = async () => {
     setLoading(true);
@@ -163,58 +182,110 @@ function Search() {
       animate={{ opacity: 1 }}
       className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50"
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <motion.div
-          initial={{ y: -20 }}
-          animate={{ y: 0 }}
-          className="text-center mb-12"
-        >
-          <div className="space-y-4">
-            <Title 
-              level={1} 
-              className="!text-transparent !bg-clip-text !bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 !mb-0"
-            >
-              Product Catalog
-            </Title>
-            <Text className="text-gray-500 text-lg block">
-              Discover and search through our extensive collection
-            </Text>
-          </div>
-        </motion.div>
+      <div className="fixed top-0 right-0 p-4 z-50 flex items-center gap-4">
+        {isLoggedIn && (
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            className={`flex items-center gap-2 px-4 py-2 rounded-full shadow-lg ${
+              isVip 
+                ? 'bg-gradient-to-r from-yellow-400 to-yellow-600'
+                : 'bg-gradient-to-r from-blue-400 to-blue-600'
+            }`}
+          >
+            {isVip ? (
+              <>
+                <StarFilled className="text-white" />
+                <span className="text-white font-semibold">VIP Member</span>
+              </>
+            ) : (
+              <>
+                <UserOutlined className="text-white" />
+                <span className="text-white font-semibold">Normal Member</span>
+              </>
+            )}
+          </motion.div>
+        )}
+        
+        {isLoggedIn ? (
+          <Button 
+            type="primary"
+            danger
+            icon={<LogoutOutlined />}
+            onClick={handleLogout}
+            className="hover:scale-105 transition-transform shadow-lg"
+          >
+            Logout
+          </Button>
+        ) : (
+          <Button 
+            type="primary"
+            icon={<LoginOutlined />}
+            onClick={handleLoginClick}
+            className="bg-gradient-to-r from-blue-500 to-purple-500 border-none hover:from-blue-600 hover:to-purple-600 hover:scale-105 transition-transform shadow-lg"
+          >
+            Login
+          </Button>
+        )}
+      </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          <Card 
-            className="hover:shadow-xl transition-all duration-300 border-2 border-blue-100 bg-white/80 backdrop-blur"
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="pt-16 mb-8">
+          <motion.div
+            initial={{ y: -20 }}
+            animate={{ y: 0 }}
+            className="flex-1"
           >
-            <Statistic 
-              title={
-                <span className="text-blue-600 font-semibold">Total Products</span>
-              }
-              value={stats.total}
-              prefix={<ShoppingOutlined className="text-blue-500" />}
-              className="!text-blue-700"
-            />
-          </Card>
-          <Card 
-            className="hover:shadow-xl transition-all duration-300 border-2 border-purple-100 bg-white/80 backdrop-blur"
-          >
-            <Button 
-              type="primary"
-              icon={<ReloadOutlined />}
-              onClick={fetchAllProducts}
-              block
-              size="large"
-              className="bg-gradient-to-r from-blue-500 to-purple-500 border-none h-[40px] hover:from-blue-600 hover:to-purple-600"
-            >
-              Refresh Catalog
-            </Button>
-          </Card>
+            <div className="space-y-2">
+              <Title 
+                level={1} 
+                className="!text-transparent !bg-clip-text !bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 !mb-0"
+              >
+                Product Catalog
+              </Title>
+              <Text className="text-gray-500 text-lg block">
+                Discover and search through our extensive collection
+              </Text>
+            </div>
+          </motion.div>
         </div>
 
-        <Card 
-          className="shadow-2xl rounded-xl backdrop-blur-sm bg-white/90 border-2 border-blue-50"
-        >
-          <Space direction="vertical" className="w-full mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            className="transition-all duration-300"
+          >
+            <Card className="shadow-lg border-2 border-blue-100 bg-white/80 backdrop-blur">
+              <Statistic 
+                title={<span className="text-blue-600 font-semibold">Total Products</span>}
+                value={stats.total}
+                prefix={<ShoppingOutlined className="text-blue-500" />}
+                className="!text-blue-700"
+              />
+            </Card>
+          </motion.div>
+
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            className="transition-all duration-300"
+          >
+            <Card className="shadow-lg border-2 border-purple-100 bg-white/80 backdrop-blur">
+              <Button 
+                type="primary"
+                icon={<ReloadOutlined />}
+                onClick={fetchAllProducts}
+                block
+                size="large"
+                className="bg-gradient-to-r from-blue-500 to-purple-500 border-none h-[40px] hover:from-blue-600 hover:to-purple-600"
+              >
+                Refresh Catalog
+              </Button>
+            </Card>
+          </motion.div>
+        </div>
+
+        <Card className="shadow-2xl rounded-xl backdrop-blur-sm bg-white/90 border-2 border-blue-50 mb-8">
+          <Space direction="vertical" className="w-full mb-6">
             <Input.Search
               placeholder="Search for products..."
               allowClear
@@ -252,6 +323,7 @@ function Search() {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
             >
               <Table
                 columns={columns}
@@ -279,52 +351,62 @@ function Search() {
       </div>
 
       <Modal
-        title="Product Details"
+        title={
+          <div className="text-lg font-semibold text-blue-600">
+            Product Details
+          </div>
+        }
         open={isModalOpen}
         onCancel={() => setIsModalOpen(false)}
         footer={null}
         width={800}
-        confirmLoading={loading}
+        className="rounded-lg"
       >
         {selectedProduct && (
-          <div>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="space-y-4"
+          >
             <Title level={3}>{selectedProduct.title}</Title>
             
-            <div style={{ marginBottom: 16 }}>
+            <div className="space-y-2">
               <Text strong>About: </Text>
               <Text>{selectedProduct.aboutIt}</Text>
             </div>
 
-            <div style={{ marginBottom: 16 }}>
+            <div className="space-y-2">
               <Text strong>Description: </Text>
               <Text>{selectedProduct.description}</Text>
             </div>
 
-            <div style={{ marginBottom: 16 }}>
-              <Text strong>Availability: </Text>
-              <Tag color={selectedProduct.availability === 'In Stock' ? 'green' : 'red'}>
-                {selectedProduct.availability}
-              </Tag>
+            <div className="flex gap-4">
+              <div>
+                <Text strong>Availability: </Text>
+                <Tag color={selectedProduct.availability ? "success" : "error"}>
+                  {selectedProduct.availability ? "In Stock" : "Out of Stock"}
+                </Tag>
+              </div>
+
+              <div>
+                <Text strong>Price: </Text>
+                <Tag color="green" icon={<DollarCircleOutlined />}>
+                  ${Number(selectedProduct.price).toFixed(2)}
+                </Tag>
+              </div>
             </div>
 
-            <div style={{ marginBottom: 16 }}>
-              <Text strong>Price: </Text>
-              <Tag color="green" icon={<DollarCircleOutlined />}>
-                ${Number(selectedProduct.price).toFixed(2)}
-              </Tag>
-            </div>
-
-            <div style={{ marginBottom: 16 }}>
+            <div>
               <Text strong>Rating: </Text>
               <Rate disabled defaultValue={parseFloat(selectedProduct.rating)} />
-              <Text> ({selectedProduct.reviews} reviews)</Text>
+              <Text className="ml-2">({selectedProduct.reviews} reviews)</Text>
             </div>
 
-            <div style={{ marginBottom: 16 }}>
+            <div>
               <Text strong>Product ID: </Text>
               <Text>{selectedProduct.id}</Text>
             </div>
-          </div>
+          </motion.div>
         )}
       </Modal>
     </motion.div>
