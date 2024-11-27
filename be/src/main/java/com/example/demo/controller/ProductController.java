@@ -1,22 +1,22 @@
-package controller;
+package com.example.demo.controller;
 
+import com.example.demo.models.Product;
+import com.example.demo.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import models.Product;
-import service.ProductService;
-
 import java.util.List;
+import java.util.Optional;
 
 @RestController
-@CrossOrigin(value = "*")
 @RequestMapping("/api/products")
+@CrossOrigin(origins = "http://localhost:5173")
 public class ProductController {
 
     @Autowired
-    private ProductService ProductService;
+    private com.example.demo.service.ProductService ProductService;
 
     // Endpoint tìm kiếm sản phẩm theo từ khóa
     @GetMapping("/search")
@@ -33,12 +33,11 @@ public class ProductController {
     }
 
     // // Endpoint lấy sản phẩm theo ID
-    // @GetMapping("/{id}")
-    // public ResponseEntity<AmazonData> getProductById(@PathVariable Long id) {
-    //     AmazonData product = amazonDataService.getProductById(id);
-    //     return product != null ? new ResponseEntity<>(product, HttpStatus.OK)
-    //                            : new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    // }
+     @GetMapping("/{id}")
+     public ResponseEntity<?> getProductById(@PathVariable Long id) {
+         Product products = ProductService.getById(id);
+         return new ResponseEntity<>(products, HttpStatus.OK);
+     }
 
     // // Endpoint tạo mới hoặc cập nhật sản phẩm
     // @PostMapping

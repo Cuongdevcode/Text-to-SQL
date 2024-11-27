@@ -1,20 +1,18 @@
-package service;
+package com.example.demo.service;
 
+import com.example.demo.models.Product;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
-import models.Product;
-import repository.ProductRepository;
-
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class ProductService {
 
     @Autowired
-    private ProductRepository ProductRepository;
+    private com.example.demo.repository.ProductRepository ProductRepository;
 
     public List<Product> searchProducts(String keyword) {
         return ProductRepository.findByTitleContainingIgnoreCase(keyword);
@@ -22,6 +20,10 @@ public class ProductService {
     // Phương thức lấy tất cả sản phẩm
     public List<Product> getAllProducts() {
         return ProductRepository.findAll();
+    }
+
+    public Product getById(Long id){
+        return ProductRepository.findById(id).get();
     }
 
     // // Phương thức lấy sản phẩm theo ID

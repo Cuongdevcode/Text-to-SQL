@@ -1,18 +1,35 @@
-.ant-table {
-    .ant-table-thead>tr>th {
-        background-color: #2626a7;
-        color: white;
-        font-weight: bold;
-        text-align: center;
-    }
+.custom-table {
+  .ant-table-thead > tr > th {
+    background: linear-gradient(to right, #2563eb, #4f46e5);
+    color: white;
+    font-weight: 600;
+  }
 
-    .ant-table-tbody>tr>td {
-        text-align: center;
-        padding: 12px;
-    }
+  .ant-table-tbody > tr:hover > td {
+    background-color: rgba(59, 130, 246, 0.05);
+  }
+}
 
-    .ant-table-pagination {
-        margin-top: 20px;
-        justify-content: center; // Căn giữa phân trang
+.search-input {
+  .ant-input {
+    border-radius: 8px;
+    &:focus {
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
     }
+  }
+
+  .ant-input-group-addon {
+    background-color: #2563eb;
+    border-radius: 0 8px 8px 0;
+  }
+}
+
+// Animation classes
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-in-out;
 }
