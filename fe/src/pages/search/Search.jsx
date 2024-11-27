@@ -31,6 +31,8 @@ function Search() {
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("user"));
   const navigate = useNavigate();
   const isVip = localStorage.getItem("isVip") === "true";
+  const [translatedText, setTranslatedText] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
 
   const handleLoginClick = () => {
     navigate("/login");
@@ -53,6 +55,18 @@ function Search() {
       );
       setResults(response.data);
       calculateStats(response.data);
+
+      if (isVip) {
+        const translationResponse = await axios.post(
+          'http://localhost:8080/api/translate/google/googleTranslate',
+          {
+            vietnameseText: keyword,
+            targetLanguage: "en"
+          }
+        );
+        setTranslatedText(translationResponse.data.translated);
+      }
+
       notification.success({
         message: 'Search Completed',
         description: `Found ${response.data.length} products`,
@@ -112,6 +126,10 @@ function Search() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleTableChange = (pagination) => {
+    setCurrentPage(pagination.current);
   };
 
   const columns = [
@@ -308,6 +326,35 @@ function Search() {
             />
           </Space>
 
+          {isVip && translatedText && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-6"
+            >
+              <Card 
+                className="bg-gradient-to-r from-yellow-50 to-yellow-100 border-yellow-200"
+                title={
+                  <div className="flex items-center gap-2">
+                    <StarFilled className="text-yellow-500" />
+                    <span className="text-yellow-700">VIP Translation</span>
+                  </div>
+                }
+              >
+                <div className="flex gap-4 items-start">
+                  <div className="flex-1">
+                    <Text strong className="text-gray-600 block mb-2">Original Text:</Text>
+                    <Text className="text-gray-800">{keyword}</Text>
+                  </div>
+                  <div className="flex-1">
+                    <Text strong className="text-gray-600 block mb-2">English Translation:</Text>
+                    <Text className="text-gray-800">{translatedText}</Text>
+                  </div>
+                </div>
+              </Card>
+            </motion.div>
+          )}
+
           {loading ? (
             <div className="flex justify-center items-center py-32">
               <Spin size="large" />
@@ -332,7 +379,9 @@ function Search() {
                   pageSize: 8,
                   showSizeChanger: true,
                   showTotal: (total) => `Total ${total} items`,
-                  className: "!text-blue-600"
+                  className: "!text-blue-600",
+                  current: currentPage,
+                  onChange: (page) => setCurrentPage(page)
                 }}
                 rowKey="id"
                 className="rounded-lg overflow-hidden"
@@ -344,6 +393,7 @@ function Search() {
                   onClick: () => handleRowClick(record),
                   style: { cursor: 'pointer' }
                 })}
+                onChange={handleTableChange}
               />
             </motion.div>
           )}
