@@ -68,14 +68,18 @@ function Search() {
   const handleSearch = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(
-        `http://localhost:8080/api/products/search`,
-        { params: { keyword } }
-      );
-      setResults(response.data);
-      calculateStats(response.data);
-
+      let response;
       if (isVip) {
+        // VIP users use Natural Language Query search
+        response = await axios.post(
+          `http://localhost:8080/api/products/searchByNLQ`,
+          {
+            vietnameseText: keyword,
+            targetLanguage: "en"
+          }
+        );
+        
+        // Get translation for display
         const translationResponse = await axios.post(
           "http://localhost:8080/api/translate/google/googleTranslate",
           {
@@ -84,7 +88,16 @@ function Search() {
           }
         );
         setTranslatedText(translationResponse.data.translated);
+      } else {
+        // Regular users use normal search
+        response = await axios.get(
+          `http://localhost:8080/api/products/search`,
+          { params: { keyword } }
+        );
       }
+      
+      setResults(response.data);
+      calculateStats(response.data);
 
       notification.success({
         message: "Search Completed",
