@@ -364,70 +364,84 @@ function Search() {
             />
           )}
 
-          <Modal
-            title={<div className="modal-header">Product Details</div>}
-            open={isModalOpen}
-            onCancel={onClose}
-            footer={null}
-            width={800}
-            className="custom-modal"
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            transition={{ duration: 0.5 }}
           >
-            {selectedProduct && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="modal-content"
-              >
-                <Title level={3}>{selectedProduct.title}</Title>
-
-                <div className="modal-section">
-                  <Text strong>About: </Text>
-                  <Text>{selectedProduct.aboutIt}</Text>
-                </div>
-
-                <div className="modal-section">
-                  <Text strong>Description: </Text>
-                  <Text>{selectedProduct.description}</Text>
-                </div>
-
-                <div className="modal-flex">
-                  <div>
-                    <Text strong>Availability: </Text>
-                    <Tag
-                      color={selectedProduct.availability ? "success" : "error"}
-                    >
-                      {selectedProduct.availability
-                        ? "In Stock"
-                        : "Out of Stock"}
-                    </Tag>
+            {/* Nội dung modal */}
+            <Modal
+              title={null}
+              open={isModalOpen}
+              onCancel={onClose}
+              footer={null}
+              width={1000}
+              className="custom-modal"
+            >
+              {selectedProduct && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.3 }}
+                  className="modal-card"
+                >
+                  <div className="modal-header">
+                    <Title className="modal-title" level={3} >
+                      {selectedProduct.title}
+                    </Title>
                   </div>
+                  <div className="modal-body">
+                    <div className="modal-details">
+                      <div>
+                        <Text strong>Price:</Text>{" "}
+                        <Tag color="green" icon={<DollarCircleOutlined />}>
+                          ${Number(selectedProduct.price).toFixed(2)}
+                        </Tag>
+                      </div>
+                      <div>
+                        <Text strong>Availability:</Text>{" "}
+                        <Badge
+                          status={
+                            selectedProduct.availability ? "success" : "error"
+                          }
+                          text={
+                            selectedProduct.availability
+                              ? "In Stock"
+                              : "Out of Stock"
+                          }
+                        />
+                      </div>
+                      <div>
+                        <Text strong>Rating:</Text>{" "}
+                        <Rate
+                          disabled
+                          defaultValue={parseFloat(selectedProduct.rating)}
+                        />
+                      </div>
+                    </div>
+                    <div className="modal-description">
+                      <Text className="about-it" strong>About It:</Text>
+                      <p>
+                        {selectedProduct.aboutIt ||
+                          "No additional information available."}
+                      </p>
+                    </div>
 
-                  <div>
-                    <Text strong>Price: </Text>
-                    <Tag color="green" icon={<DollarCircleOutlined />}>
-                      ${Number(selectedProduct.price).toFixed(2)}
-                    </Tag>
+                    <div className="modal-section">
+                      <Text className="description" strong>Description: </Text>
+                      <p>{selectedProduct.description}</p>
+                    </div>
                   </div>
-                </div>
-
-                <div className="modal-section">
-                  <Text strong>Rating: </Text>
-                  <Rate
-                    disabled
-                    defaultValue={parseFloat(selectedProduct.rating)}
-                  />
-                  <Text className="modal-reviews">
-                    ({selectedProduct.reviews} reviews)
-                  </Text>
-                </div>
-
-                <div className="modal-section">
-                  <Text strong>Product ID: </Text>
-                  <Text>{selectedProduct.id}</Text>
-                </div>
-              </motion.div>
-            )}
-          </Modal>
+                  <div className="modal-footer">
+                    <Button type="primary" onClick={onClose}>
+                      Close
+                    </Button>
+                  </div>
+                </motion.div>
+              )}
+            </Modal>
+          </motion.div>
         </div>
       </div>
     </div>
