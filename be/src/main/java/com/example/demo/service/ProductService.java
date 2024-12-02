@@ -2,6 +2,7 @@ package com.example.demo.service;
 
 import com.example.demo.models.Product;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -26,19 +27,87 @@ public class ProductService {
         return ProductRepository.findById(id).get();
     }
 
-    // // Phương thức lấy sản phẩm theo ID
-    // public Product getProductById(Long id) {
-    //     return amazonDataRepository.findById(id).orElse(null);
-    // }
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
-    // // Phương thức lưu sản phẩm
-    // public AmazonData saveProduct(AmazonData product) {
-    //     return amazonDataRepository.save(product);
-    // }
+    // Tìm sản phẩm theo câu SQL
+    public List<Product> searchProductsBySQL(String sqlQuery) {
+        System.out.println(sqlQuery);
+        String sqlClean = extractSqlQuery1(sqlQuery);
+        System.out.println(sqlClean);
+        if (!sqlClean.toUpperCase().startsWith("SELECT")) {
+            throw new IllegalArgumentException("Only SELECT queries are allowed.");
+        }
+        System.out.println("SELECT * FROM " + sqlClean.split(" FROM ", 2)[1]);
+        return jdbcTemplate.query(
+                "SELECT * FROM " + sqlClean.split(" FROM ", 2)[1],
+                (rs, rowNum) -> new Product(
+                        rs.getLong("id"),
+                        rs.getString("title"),
+                        rs.getString("price"),
+                        rs.getString("rating"),
+                        rs.getString("reviews"),
+                        rs.getString("availability"),
+                        rs.getString("about_it"),
+                        rs.getString("description")
+                )
+        );
+    }
 
-    // // Phương thức xóa sản phẩm theo ID
-    // public void deleteProduct(Long id) {
-    //     amazonDataRepository.deleteById(id);
-    // }
+    // Phương thức lọc câu SQL hợp lệ
+    private String extractSqlQuery(String input) {
+        int thirdQuoteIndex = findNthOccurrence(input, '"', 3);
+        if (thirdQuoteIndex == -1) {
+            return "Invalid SQL query format";
+        }
+        int semicolonIndex = input.indexOf(";", thirdQuoteIndex);
+        if (semicolonIndex == -1) {
+            return "No semicolon found after third quote";
+        }
+        return input.substring(thirdQuoteIndex + 1, semicolonIndex).trim();
+    }
+
+    // Phương thức tìm chỉ mục của dấu ký tự nth trong chuỗi
+    private int findNthOccurrence(String str, char c, int n) {
+        int pos = -1;
+        for (int i = 0; i < n; i++) {
+            pos = str.indexOf(c, pos + 1);
+            if (pos == -1) {
+                return -1;
+            }
+        }
+        return pos;
+    }
+
+    // Phương thức lọc câu SQL hợp lệ từ dấu " thứ 3 đến dấu " thứ 4
+    private String extractSqlQuery1(String input) {
+        // Tìm vị trí của dấu " thứ 3
+        int thirdQuoteIndex = findNthOccurrence1(input, '"', 3);
+        if (thirdQuoteIndex == -1) {
+            return "Invalid SQL query format: No third quote found";
+        }
+
+        // Tìm vị trí của dấu " thứ 4
+        int fourthQuoteIndex = findNthOccurrence1(input, '"', 4);
+        if (fourthQuoteIndex == -1) {
+            return "Invalid SQL query format: No fourth quote found";
+        }
+
+        // Trả về chuỗi từ dấu " thứ 3 đến dấu " thứ 4
+        return input.substring(thirdQuoteIndex + 1, fourthQuoteIndex).trim();
+    }
+
+    // Phương thức tìm chỉ mục của dấu ký tự nth trong chuỗi
+    private int findNthOccurrence1(String str, char c, int n) {
+        int pos = -1;
+        for (int i = 0; i < n; i++) {
+            pos = str.indexOf(c, pos + 1);
+            if (pos == -1) {
+                return -1;
+            }
+        }
+        return pos;
+    }
+
 }
 

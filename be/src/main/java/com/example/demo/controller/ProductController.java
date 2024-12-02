@@ -1,7 +1,10 @@
 package com.example.demo.controller;
 
+import com.example.demo.models.GoogleTranslationRequest;
 import com.example.demo.models.Product;
+import com.example.demo.service.GoogleTranslationService;
 import com.example.demo.service.ProductService;
+import com.example.demo.service.PythonApiService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +20,9 @@ public class ProductController {
 
     @Autowired
     private com.example.demo.service.ProductService ProductService;
+
+    @Autowired
+    private GoogleTranslationService googleTranslationService;
 
     // Endpoint tìm kiếm sản phẩm theo từ khóa
     @GetMapping("/search")
@@ -39,17 +45,21 @@ public class ProductController {
          return new ResponseEntity<>(products, HttpStatus.OK);
      }
 
-    // // Endpoint tạo mới hoặc cập nhật sản phẩm
-    // @PostMapping
-    // public ResponseEntity<AmazonData> createOrUpdateProduct(@RequestBody AmazonData product) {
-    //     AmazonData savedProduct = amazonDataService.saveProduct(product);
-    //     return new ResponseEntity<>(savedProduct, HttpStatus.CREATED);
-    // }
+    @Autowired
+    private PythonApiService pythonApiService;
 
-    // // Endpoint xóa sản phẩm
-    // @DeleteMapping("/{id}")
-    // public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
-    //     amazonDataService.deleteProduct(id);
-    //     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    // }
+    // Endpoint tìm kiếm sản phẩm theo từ khóa
+    @PostMapping("/searchByNLQ")
+    public ResponseEntity<List<Product>> searchProductsByQuery(@RequestBody GoogleTranslationRequest request) {
+        // Bước 1: Dịch câu truy vấn sang tiếng Anh
+        String translatedQuery = googleTranslationService.translate(request.getVietnameseText(), "en").getTranslated();
+
+        // Bước 2: Gửi câu truy vấn đã dịch đến Python để sinh câu SQL
+        String sqlQuery = pythonApiService.generateSQLQuery(translatedQuery);
+
+        // Bước 3: Thực thi câu SQL trong cơ sở dữ liệu
+        List<Product> products = ProductService.searchProductsBySQL(sqlQuery);
+
+        return new ResponseEntity<>(products, HttpStatus.OK);
+    }
 }

@@ -68,14 +68,18 @@ function Search() {
   const handleSearch = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(
-        `http://localhost:8080/api/products/search`,
-        { params: { keyword } }
-      );
-      setResults(response.data);
-      calculateStats(response.data);
-
+      let response;
       if (isVip) {
+        // VIP users use Natural Language Query search
+        response = await axios.post(
+          `http://localhost:8080/api/products/searchByNLQ`,
+          {
+            vietnameseText: keyword,
+            targetLanguage: "en"
+          }
+        );
+        
+        // Get translation for display
         const translationResponse = await axios.post(
           "http://localhost:8080/api/translate/google/googleTranslate",
           {
@@ -84,7 +88,16 @@ function Search() {
           }
         );
         setTranslatedText(translationResponse.data.translated);
+      } else {
+        // Regular users use normal search
+        response = await axios.get(
+          `http://localhost:8080/api/products/search`,
+          { params: { keyword } }
+        );
       }
+      
+      setResults(response.data);
+      calculateStats(response.data);
 
       notification.success({
         message: "Search Completed",
@@ -186,8 +199,8 @@ function Search() {
       key: "availability",
       render: (status) => (
         <Badge
-          status={status ? "success" : "error"}
-          text={status ? "In Stock" : "Out of Stock"}
+          status={status == "In Stock" ? "success" : status == "Not Available" ? "error" : "default"}
+          text={status == "In Stock" ? "In Stock" : status == "Not Available" ? "Not Available" : status}
         />
       ),
     },
@@ -214,6 +227,7 @@ function Search() {
     id: product.id,
     title: product.title,
     price: product.price,
+    reviews: product.reviews,
     rating: product.rating,
     availability: product.availability,
     description: product.description,
