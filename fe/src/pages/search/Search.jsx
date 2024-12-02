@@ -199,8 +199,8 @@ function Search() {
       key: "availability",
       render: (status) => (
         <Badge
-          status={status ? "success" : "error"}
-          text={status ? "In Stock" : "Out of Stock"}
+          status={status == "In Stock" ? "success" : status == "Not Available" ? "error" : "default"}
+          text={status == "In Stock" ? "In Stock" : status == "Not Available" ? "Not Available" : status}
         />
       ),
     },
@@ -227,6 +227,7 @@ function Search() {
     id: product.id,
     title: product.title,
     price: product.price,
+    reviews: product.reviews,
     rating: product.rating,
     availability: product.availability,
     description: product.description,
@@ -407,11 +408,13 @@ function Search() {
                   <div>
                     <Text strong>Availability: </Text>
                     <Tag
-                      color={selectedProduct.availability ? "success" : "error"}
+                      color={selectedProduct.availability == "In Stock" ? "success" : "error"}
                     >
-                      {selectedProduct.availability
+                      {selectedProduct.availability == "In Stock"
                         ? "In Stock"
-                        : "Out of Stock"}
+                        : selectedProduct.availability == "Not Available"
+                        ? "Not Available"
+                        : selectedProduct.availability}
                     </Tag>
                   </div>
 

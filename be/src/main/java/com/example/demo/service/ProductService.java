@@ -32,19 +32,21 @@ public class ProductService {
 
     // Tìm sản phẩm theo câu SQL
     public List<Product> searchProductsBySQL(String sqlQuery) {
-        String sqlClean = extractSqlQuery(sqlQuery);
-//        if (!sqlClean.toUpperCase().startsWith("SELECT")) {
-//            throw new IllegalArgumentException("Only SELECT queries are allowed.");
-//        }
+        System.out.println(sqlQuery);
+        String sqlClean = extractSqlQuery1(sqlQuery);
         System.out.println(sqlClean);
+        if (!sqlClean.toUpperCase().startsWith("SELECT")) {
+            throw new IllegalArgumentException("Only SELECT queries are allowed.");
+        }
+        System.out.println("SELECT * FROM " + sqlClean.split(" FROM ", 2)[1]);
         return jdbcTemplate.query(
-                sqlClean,
+                "SELECT * FROM " + sqlClean.split(" FROM ", 2)[1],
                 (rs, rowNum) -> new Product(
                         rs.getLong("id"),
                         rs.getString("title"),
                         rs.getString("price"),
-                        rs.getString("reviews"),
                         rs.getString("rating"),
+                        rs.getString("reviews"),
                         rs.getString("availability"),
                         rs.getString("about_it"),
                         rs.getString("description")
@@ -76,5 +78,36 @@ public class ProductService {
         }
         return pos;
     }
+
+    // Phương thức lọc câu SQL hợp lệ từ dấu " thứ 3 đến dấu " thứ 4
+    private String extractSqlQuery1(String input) {
+        // Tìm vị trí của dấu " thứ 3
+        int thirdQuoteIndex = findNthOccurrence1(input, '"', 3);
+        if (thirdQuoteIndex == -1) {
+            return "Invalid SQL query format: No third quote found";
+        }
+
+        // Tìm vị trí của dấu " thứ 4
+        int fourthQuoteIndex = findNthOccurrence1(input, '"', 4);
+        if (fourthQuoteIndex == -1) {
+            return "Invalid SQL query format: No fourth quote found";
+        }
+
+        // Trả về chuỗi từ dấu " thứ 3 đến dấu " thứ 4
+        return input.substring(thirdQuoteIndex + 1, fourthQuoteIndex).trim();
+    }
+
+    // Phương thức tìm chỉ mục của dấu ký tự nth trong chuỗi
+    private int findNthOccurrence1(String str, char c, int n) {
+        int pos = -1;
+        for (int i = 0; i < n; i++) {
+            pos = str.indexOf(c, pos + 1);
+            if (pos == -1) {
+                return -1;
+            }
+        }
+        return pos;
+    }
+
 }
 
