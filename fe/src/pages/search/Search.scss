@@ -10,6 +10,21 @@
     background-color: #01428E;
     border-radius: 0 8px 8px 0;
   }
+
+  .ant-table-row:hover {
+    background-color: #e6f7ff !important;
+  }
+  
+  .ant-table-cell {
+    font-size: 14px;
+    font-weight: 500;
+  }
+  
+  .title-cell {
+    font-weight: bold;
+    color: #1d39c4;
+  }
+  
 }
 
 .search-container {
@@ -175,6 +190,21 @@
     border-radius: 10px;
     background-color: #01428E;
   }
+
+  .modal-section{
+    color: #4caf50
+
+  }
+}
+
+.description{
+  color: #c00202;
+  font-size: 1.1em;
+}
+
+.about-it{
+  color: #c00202;
+  font-size: 1.1em;
 }
 
 .table-container {
@@ -202,6 +232,59 @@
     font-weight: bold;
   }
 }
+
+.custom-modal .modal-card {
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #f0f2f5;
+  padding: 20px;
+}
+
+.modal-image {
+  width: 150px;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 50%;
+  margin-bottom: 15px;
+}
+
+.modal-title {
+  margin: 0;
+  font-weight: bold;
+  text-align: center;
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+.modal-details {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.modal-description p {
+  margin-top: 10px;
+  line-height: 1.6;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: center;
+  padding: 10px 20px;
+  background-color: #fafafa;
+  border-top: 1px solid #f0f0f0;
+}
+
 
 // Animation classes
 @keyframes fadeIn {
